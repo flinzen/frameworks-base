@@ -26,10 +26,10 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_WHOLE_STATIC_LIBRARIES := libsigchain
 
-LOCAL_MODULE:= app_process
+LOCAL_MODULE:= app_process$(APP_PROCESS_SUFFIX)
 LOCAL_MULTILIB := both
-LOCAL_MODULE_STEM_32 := app_process32
-LOCAL_MODULE_STEM_64 := app_process64
+LOCAL_MODULE_STEM_32 := app_process32$(APP_PROCESS_SUFFIX)
+LOCAL_MODULE_STEM_64 := app_process64$(APP_PROCESS_SUFFIX)
 
 LOCAL_CFLAGS += -Wall -Werror -Wunused -Wunreachable-code
 
