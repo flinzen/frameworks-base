@@ -112,8 +112,8 @@ public class ListView extends AbsListView {
         public boolean isSelectable;
     }
 
-    private ArrayList<FixedViewInfo> mHeaderViewInfos = Lists.newArrayList();
-    private ArrayList<FixedViewInfo> mFooterViewInfos = Lists.newArrayList();
+    ArrayList<FixedViewInfo> mHeaderViewInfos = Lists.newArrayList();
+    ArrayList<FixedViewInfo> mFooterViewInfos = Lists.newArrayList();
 
     Drawable mDivider;
     int mDividerHeight;
@@ -279,7 +279,7 @@ public class ListView extends AbsListView {
         // Wrap the adapter if it wasn't already wrapped.
         if (mAdapter != null) {
             if (!(mAdapter instanceof HeaderViewListAdapter)) {
-                mAdapter = new HeaderViewListAdapter(mHeaderViewInfos, mFooterViewInfos, mAdapter);
+                wrapHeaderListAdapterInternal();
             }
 
             // In the case of re-adding a header view, or adding one later on,
@@ -373,7 +373,7 @@ public class ListView extends AbsListView {
         // Wrap the adapter if it wasn't already wrapped.
         if (mAdapter != null) {
             if (!(mAdapter instanceof HeaderViewListAdapter)) {
-                mAdapter = new HeaderViewListAdapter(mHeaderViewInfos, mFooterViewInfos, mAdapter);
+                wrapHeaderListAdapterInternal();
             }
 
             // In the case of re-adding a footer view, or adding one later on,
@@ -464,7 +464,7 @@ public class ListView extends AbsListView {
      *        data backing this list and for producing a view to represent an
      *        item in that data set.
      *
-     * @see #getAdapter() 
+     * @see #getAdapter()
      */
     @Override
     public void setAdapter(ListAdapter adapter) {
@@ -476,7 +476,7 @@ public class ListView extends AbsListView {
         mRecycler.clear();
 
         if (mHeaderViewInfos.size() > 0|| mFooterViewInfos.size() > 0) {
-            mAdapter = new HeaderViewListAdapter(mHeaderViewInfos, mFooterViewInfos, adapter);
+            mAdapter = wrapHeaderListAdapterInternal(mHeaderViewInfos, mFooterViewInfos, adapter);
         } else {
             mAdapter = adapter;
         }
@@ -1532,7 +1532,7 @@ public class ListView extends AbsListView {
                         adjustViewsUpOrDown();
                     }
                 } else if (lastPosition == mItemCount - 1) {
-                    adjustViewsUpOrDown();                    
+                    adjustViewsUpOrDown();
                 }
             }
         }
@@ -1857,7 +1857,7 @@ public class ListView extends AbsListView {
                     && focusLayoutRestoreView.getWindowToken() != null) {
                 focusLayoutRestoreView.dispatchFinishTemporaryDetach();
             }
-            
+
             mLayoutMode = LAYOUT_NORMAL;
             mDataChanged = false;
             if (mPositionScrollAfterLayout != null) {
@@ -2050,6 +2050,8 @@ public class ListView extends AbsListView {
                 p.recycledHeaderFooter = true;
             }
             addViewInLayout(child, flowDown ? -1 : 0, p, true);
+            // add view in layout will reset the RTL properties. We have to re-resolve them
+            child.resolveRtlPropertiesIfNeeded();
         }
 
         if (needToMeasure) {
@@ -2107,7 +2109,7 @@ public class ListView extends AbsListView {
 
     /**
      * Makes the item at the supplied position selected.
-     * 
+     *
      * @param position the position of the item to select
      */
     @Override
@@ -2226,7 +2228,7 @@ public class ListView extends AbsListView {
      * after the header views.
      */
     public void setSelectionAfterHeaderView() {
-        final int count = mHeaderViewInfos.size();
+        final int count = getHeaderViewsCount();
         if (count > 0) {
             mNextSelectedPosition = 0;
             return;
@@ -2958,7 +2960,7 @@ public class ListView extends AbsListView {
             if (startPos < firstPosition) {
                 startPos = firstPosition;
             }
-            
+
             final int lastVisiblePos = getLastVisiblePosition();
             final ListAdapter adapter = getAdapter();
             for (int pos = startPos; pos <= lastVisiblePos; pos++) {
@@ -3127,7 +3129,7 @@ public class ListView extends AbsListView {
     /**
      * Determine the distance to the nearest edge of a view in a particular
      * direction.
-     * 
+     *
      * @param descendant A descendant of this list.
      * @return The distance, or 0 if the nearest edge is already on screen.
      */
@@ -3354,7 +3356,7 @@ public class ListView extends AbsListView {
             bounds.right = mRight - mLeft - mPaddingRight;
 
             final int count = getChildCount();
-            final int headerCount = mHeaderViewInfos.size();
+            final int headerCount = getHeaderViewsCount();
             final int itemCount = mItemCount;
             final int footerLimit = (itemCount - mFooterViewInfos.size());
             final boolean headerDividers = mHeaderDividersEnabled;
@@ -3384,7 +3386,7 @@ public class ListView extends AbsListView {
             final int listBottom = mBottom - mTop - effectivePaddingBottom + mScrollY;
             if (!mStackFromBottom) {
                 int bottom = 0;
-                
+
                 // Draw top divider or header for overscroll
                 final int scrollY = mScrollY;
                 if (count > 0 && scrollY < 0) {
@@ -3481,7 +3483,7 @@ public class ListView extends AbsListView {
                         }
                     }
                 }
-                
+
                 if (count > 0 && scrollY > 0) {
                     if (drawOverscrollFooter) {
                         final int absListBottom = mBottom;
@@ -3565,7 +3567,7 @@ public class ListView extends AbsListView {
     public int getDividerHeight() {
         return mDividerHeight;
     }
-    
+
     /**
      * Sets the height of the divider that will be drawn between each item in the list. Calling
      * this will override the intrinsic height as set by {@link #setDivider(Drawable)}
@@ -3623,7 +3625,7 @@ public class ListView extends AbsListView {
     public boolean areFooterDividersEnabled() {
         return mFooterDividersEnabled;
     }
-    
+
     /**
      * Sets the drawable that will be drawn above all other list content.
      * This area can become visible when the user overscrolls the list.
@@ -3876,10 +3878,10 @@ public class ListView extends AbsListView {
     /**
      * Returns the set of checked items ids. The result is only valid if the
      * choice mode has not been set to {@link #CHOICE_MODE_NONE}.
-     * 
+     *
      * @return A new array which contains the id of each checked item in the
      *         list.
-     *         
+     *
      * @deprecated Use {@link #getCheckedItemIds()} instead.
      */
     @Deprecated
@@ -3938,7 +3940,7 @@ public class ListView extends AbsListView {
         if (drawDividers) {
             final boolean fillForMissingDividers = isOpaque() && !super.isOpaque();
             final int itemCount = mItemCount;
-            final int headerCount = mHeaderViewInfos.size();
+            final int headerCount = getHeaderViewsCount();
             final int footerLimit = (itemCount - mFooterViewInfos.size());
             final boolean isHeader = (itemIndex < headerCount);
             final boolean isFooter = (itemIndex >= footerLimit);
@@ -4049,5 +4051,25 @@ public class ListView extends AbsListView {
         super.encodeProperties(encoder);
 
         encoder.addProperty("recycleOnMeasure", recycleOnMeasure());
+    }
+
+    /** @hide */
+    protected HeaderViewListAdapter wrapHeaderListAdapterInternal(
+            ArrayList<ListView.FixedViewInfo> headerViewInfos,
+            ArrayList<ListView.FixedViewInfo> footerViewInfos,
+            ListAdapter adapter) {
+        return new HeaderViewListAdapter(headerViewInfos, footerViewInfos, adapter);
+    }
+
+    /** @hide */
+    protected void wrapHeaderListAdapterInternal() {
+        mAdapter = wrapHeaderListAdapterInternal(mHeaderViewInfos, mFooterViewInfos, mAdapter);
+    }
+
+    /** @hide */
+    protected void dispatchDataSetObserverOnChangedInternal() {
+        if (mDataSetObserver != null) {
+            mDataSetObserver.onChanged();
+        }
     }
 }

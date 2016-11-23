@@ -57,10 +57,10 @@ import com.android.internal.app.IAppOpsService;
  * SoundPool will automatically stop a previously playing stream based first
  * on priority and then by age within that priority. Limiting the maximum
  * number of streams helps to cap CPU loading and reducing the likelihood that
- * audio mixing will impact visuals or UI performance.</p> 
+ * audio mixing will impact visuals or UI performance.</p>
  *
  * <p>Sounds can be looped by setting a non-zero loop value. A value of -1
- * causes the sound to loop forever. In this case, the application must 
+ * causes the sound to loop forever. In this case, the application must
  * explicitly call the stop() function to stop the sound. Any other non-zero
  * value will cause the sound to repeat the specified number of times, e.g.
  * a value of 3 causes the sound to play a total of 4 times.</p>
@@ -141,7 +141,7 @@ public class SoundPool {
      *
      * @param maxStreams the maximum number of simultaneous streams for this
      *                   SoundPool object
-     * @param streamType the audio stream type as described in AudioManager 
+     * @param streamType the audio stream type as described in AudioManager
      *                   For example, game applications will normally use
      *                   {@link AudioManager#STREAM_MUSIC}.
      * @param srcQuality the sample-rate converter quality. Currently has no
@@ -236,7 +236,7 @@ public class SoundPool {
      * "R.raw.explosion" as the resource ID. Note that this means you cannot
      * have both an "explosion.wav" and an "explosion.mp3" in the res/raw
      * directory.
-     * 
+     *
      * @param context the application context
      * @param resId the resource ID
      * @param priority the priority of the sound. Currently has no effect. Use
@@ -310,7 +310,7 @@ public class SoundPool {
     /**
      * Play a sound from a sound ID.
      *
-     * Play the sound specified by the soundID. This is the value 
+     * Play the sound specified by the soundID. This is the value
      * returned by the load() function. Returns a non-zero streamID
      * if successful, zero if it fails. The streamID can be used to
      * further control playback. Note that calling play() may cause
@@ -505,27 +505,31 @@ public class SoundPool {
     }
 
     private boolean isRestricted() {
-        IAudioService service = getService();
-        boolean cameraSoundForced = false;
-
-        try {
-            cameraSoundForced = service.isCameraSoundForced();
-        } catch (RemoteException e) {
-            Log.e(TAG, "Cannot access AudioService in isRestricted()");
-        }
-
-        if (cameraSoundForced &&
-                ((mAttributes.getAllFlags() & AudioAttributes.FLAG_AUDIBILITY_ENFORCED) != 0)
-// FIXME: should also check usage when set properly by camera app
-//                && (mAttributes.getUsage() == AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
-                ) {
+        // check app ops
+        if (mHasAppOpsPlayAudio) {
             return false;
         }
-
+        // check bypass flag
         if ((mAttributes.getAllFlags() & AudioAttributes.FLAG_BYPASS_INTERRUPTION_POLICY) != 0) {
             return false;
         }
-        return !mHasAppOpsPlayAudio;
+        // check force audibility flag and camera restriction
+        if ((mAttributes.getAllFlags() & AudioAttributes.FLAG_AUDIBILITY_ENFORCED) != 0) {
+// FIXME: should also check usage when set properly by camera app
+//          && (mAttributes.getUsage() == AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+            boolean cameraSoundForced = false;
+            try {
+                cameraSoundForced = getService().isCameraSoundForced();
+            } catch (RemoteException e) {
+                Log.e(TAG, "Cannot access AudioService in isRestricted()");
+            } catch (NullPointerException e) {
+                Log.e(TAG, "Null AudioService in isRestricted()");
+            }
+            if (cameraSoundForced) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void updateAppOpsPlayAudio() {
@@ -539,7 +543,7 @@ public class SoundPool {
         }
     }
 
-    private native final int _load(FileDescriptor fd, long offset, long length, int priority); 
+    private native final int _load(FileDescriptor fd, long offset, long length, int priority);
 
     private native final int native_setup(Object weakRef, int maxStreams,
             Object/*AudioAttributes*/ attributes);
