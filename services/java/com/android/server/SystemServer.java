@@ -16,7 +16,6 @@
 
 package com.android.server;
 
-import android.app.ActivityManagerNative;
 import android.app.ActivityThread;
 import android.app.INotificationManager;
 import android.app.usage.UsageStatsManagerInternal;
@@ -32,7 +31,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.FactoryTest;
 import android.os.FileUtils;
-import android.os.IPowerManager;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.RemoteException;
@@ -55,17 +53,20 @@ import com.android.internal.app.NightDisplayController;
 import com.android.internal.os.BinderInternal;
 import com.android.internal.os.SamplingProfilerIntegration;
 import com.android.internal.os.ZygoteInit;
+import com.android.internal.policy.EmergencyAffordanceManager;
 import com.android.internal.widget.ILockSettings;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.audio.AudioService;
 import com.android.server.camera.CameraService;
 import com.android.server.clipboard.ClipboardService;
+import com.android.server.connectivity.IpConnectivityMetrics;
 import com.android.server.connectivity.MetricsLoggerService;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
 import com.android.server.display.DisplayManagerService;
 import com.android.server.display.NightDisplayService;
 import com.android.server.dreams.DreamManagerService;
+import com.android.server.emergency.EmergencyAffordanceService;
 import com.android.server.fingerprint.FingerprintService;
 import com.android.server.hdmi.HdmiControlService;
 import com.android.server.input.InputManagerService;
@@ -161,6 +162,8 @@ public final class SystemServer {
             "com.google.android.clockwork.bluetooth.WearBluetoothService";
     private static final String WEAR_WIFI_MEDIATOR_SERVICE_CLASS =
             "com.google.android.clockwork.wifi.WearWifiMediatorService";
+    private static final String WEAR_CELLULAR_MEDIATOR_SERVICE_CLASS =
+            "com.google.android.clockwork.cellular.WearCellularMediatorService";
     private static final String WEAR_TIME_SERVICE_CLASS =
             "com.google.android.clockwork.time.WearTimeService";
     private static final String ACCOUNT_SERVICE_CLASS =
@@ -205,6 +208,7 @@ public final class SystemServer {
 
     private boolean mOnlyCore;
     private boolean mFirstBoot;
+    private final boolean mRuntimeRestart;
 
     /**
      * Start the sensor service.
@@ -221,6 +225,8 @@ public final class SystemServer {
     public SystemServer() {
         // Check for factory test mode.
         mFactoryTestMode = FactoryTest.getMode();
+        // Remember if it's runtime restart(when sys.boot_completed is already set) or reboot
+        mRuntimeRestart = "1".equals(SystemProperties.get("sys.boot_completed"));
     }
 
     private void run() {
@@ -320,6 +326,7 @@ public final class SystemServer {
 
             // Create the system service manager.
             mSystemServiceManager = new SystemServiceManager(mSystemContext);
+            mSystemServiceManager.setRuntimeRestarted(mRuntimeRestart);
             LocalServices.addService(SystemServiceManager.class, mSystemServiceManager);
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
@@ -548,9 +555,15 @@ public final class SystemServer {
                 false);
         boolean disableTrustManager = SystemProperties.getBoolean("config.disable_trustmanager",
                 false);
-        boolean disableTextServices = SystemProperties.getBoolean("config.disable_textservices", false);
+        boolean disableTextServices = SystemProperties.getBoolean("config.disable_textservices",
+                false);
         boolean disableSamplingProfiler = SystemProperties.getBoolean("config.disable_samplingprof",
                 false);
+        boolean disableConsumerIr = SystemProperties.getBoolean("config.disable_consumerir", false);
+        boolean disableVrManager = SystemProperties.getBoolean("config.disable_vrmanager", false);
+        boolean disableCameraService = SystemProperties.getBoolean("config.disable_cameraservice",
+                false);
+
         boolean isEmulator = SystemProperties.get("ro.kernel.qemu").equals("1");
 
         try {
@@ -574,8 +587,10 @@ public final class SystemServer {
 
             mContentResolver = context.getContentResolver();
 
-            Slog.i(TAG, "Camera Service");
-            mSystemServiceManager.startService(CameraService.class);
+            if (!disableCameraService) {
+                Slog.i(TAG, "Camera Service");
+                mSystemServiceManager.startService(CameraService.class);
+            }
 
             // The AccountManager must come before the ContentService
             traceBeginAndSlog("StartAccountManagerService");
@@ -595,10 +610,12 @@ public final class SystemServer {
             ServiceManager.addService("vibrator", vibrator);
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
 
-            traceBeginAndSlog("StartConsumerIrService");
-            consumerIr = new ConsumerIrService(context);
-            ServiceManager.addService(Context.CONSUMER_IR_SERVICE, consumerIr);
-            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+            if (!disableConsumerIr) {
+                traceBeginAndSlog("StartConsumerIrService");
+                consumerIr = new ConsumerIrService(context);
+                ServiceManager.addService(Context.CONSUMER_IR_SERVICE, consumerIr);
+                Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+            }
 
             traceBeginAndSlog("StartAlarmManagerService");
             mSystemServiceManager.startService(AlarmManagerService.class);
@@ -621,9 +638,11 @@ public final class SystemServer {
             ServiceManager.addService(Context.INPUT_SERVICE, inputManager);
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
 
-            traceBeginAndSlog("StartVrManagerService");
-            mSystemServiceManager.startService(VrManagerService.class);
-            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+            if (!disableVrManager) {
+                traceBeginAndSlog("StartVrManagerService");
+                mSystemServiceManager.startService(VrManagerService.class);
+                Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+            }
 
             mActivityManagerService.setWindowManager(wm);
 
@@ -651,6 +670,10 @@ public final class SystemServer {
 
             traceBeginAndSlog("ConnectivityMetricsLoggerService");
             mSystemServiceManager.startService(MetricsLoggerService.class);
+            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+
+            traceBeginAndSlog("IpConnectivityMetrics");
+            mSystemServiceManager.startService(IpConnectivityMetrics.class);
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
 
             traceBeginAndSlog("PinnerService");
@@ -1080,6 +1103,11 @@ public final class SystemServer {
                 Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
             }
 
+            if (!disableNetwork && !disableNonCoreServices && EmergencyAffordanceManager.ENABLED) {
+                // EmergencyMode sevice
+                mSystemServiceManager.startService(EmergencyAffordanceService.class);
+            }
+
             if (!disableNonCoreServices) {
                 // Dreams (interactive idle-time views, a/k/a screen savers, and doze mode)
                 mSystemServiceManager.startService(DreamManagerService.class);
@@ -1164,6 +1192,9 @@ public final class SystemServer {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)) {
             mSystemServiceManager.startService(WEAR_BLUETOOTH_SERVICE_CLASS);
             mSystemServiceManager.startService(WEAR_WIFI_MEDIATOR_SERVICE_CLASS);
+            if (SystemProperties.getBoolean("config.enable_cellmediator", false)) {
+                mSystemServiceManager.startService(WEAR_CELLULAR_MEDIATOR_SERVICE_CLASS);
+            }
           if (!disableNonCoreServices) {
               mSystemServiceManager.startService(WEAR_TIME_SERVICE_CLASS);
           }

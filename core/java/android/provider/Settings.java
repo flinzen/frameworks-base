@@ -44,7 +44,6 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.DropBoxManager;
 import android.os.IBinder;
@@ -1284,6 +1283,19 @@ public final class Settings {
             = "android.settings.VR_LISTENER_SETTINGS";
 
     /**
+     * Activity Action: Show Storage Manager settings.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_STORAGE_MANAGER_SETTINGS
+            = "android.settings.STORAGE_MANAGER_SETTINGS";
+
+    /**
      * Activity Action: Allows user to select current webview implementation.
      * <p>
      * Input: Nothing.
@@ -1838,7 +1850,6 @@ public final class Settings {
             MOVED_TO_GLOBAL.add(Settings.Global.CALL_AUTO_RETRY);
             MOVED_TO_GLOBAL.add(Settings.Global.DEBUG_APP);
             MOVED_TO_GLOBAL.add(Settings.Global.WAIT_FOR_DEBUGGER);
-            MOVED_TO_GLOBAL.add(Settings.Global.SHOW_PROCESSES);
             MOVED_TO_GLOBAL.add(Settings.Global.ALWAYS_FINISH_ACTIVITIES);
             MOVED_TO_GLOBAL.add(Settings.Global.TZINFO_UPDATE_CONTENT_URL);
             MOVED_TO_GLOBAL.add(Settings.Global.TZINFO_UPDATE_METADATA_URL);
@@ -2746,6 +2757,15 @@ public final class Settings {
                 new InclusiveIntegerRangeValidator(0, 255);
 
         /**
+         * The screen backlight brightness between 0 and 255.
+         * @hide
+         */
+        public static final String SCREEN_BRIGHTNESS_FOR_VR = "screen_brightness_for_vr";
+
+        private static final Validator SCREEN_BRIGHTNESS_FOR_VR_VALIDATOR =
+                new InclusiveIntegerRangeValidator(0, 255);
+
+        /**
          * Control whether to enable automatic brightness mode.
          */
         public static final String SCREEN_BRIGHTNESS_MODE = "screen_brightness_mode";
@@ -2775,7 +2795,8 @@ public final class Settings {
         /**
          * Control whether the process CPU usage meter should be shown.
          *
-         * @deprecated Use {@link Global#SHOW_PROCESSES} instead
+         * @deprecated This functionality is no longer available as of
+         * {@link android.os.Build.VERSION_CODES#N_MR1}.
          */
         @Deprecated
         public static final String SHOW_PROCESSES = Global.SHOW_PROCESSES;
@@ -3738,6 +3759,7 @@ public final class Settings {
             VALIDATORS.put(DIM_SCREEN, DIM_SCREEN_VALIDATOR);
             VALIDATORS.put(SCREEN_OFF_TIMEOUT, SCREEN_OFF_TIMEOUT_VALIDATOR);
             VALIDATORS.put(SCREEN_BRIGHTNESS, SCREEN_BRIGHTNESS_VALIDATOR);
+            VALIDATORS.put(SCREEN_BRIGHTNESS_FOR_VR, SCREEN_BRIGHTNESS_FOR_VR_VALIDATOR);
             VALIDATORS.put(SCREEN_BRIGHTNESS_MODE, SCREEN_BRIGHTNESS_MODE_VALIDATOR);
             VALIDATORS.put(MODE_RINGER_STREAMS_AFFECTED, MODE_RINGER_STREAMS_AFFECTED_VALIDATOR);
             VALIDATORS.put(MUTE_STREAMS_AFFECTED, MUTE_STREAMS_AFFECTED_VALIDATOR);
@@ -5345,6 +5367,13 @@ public final class Settings {
         public static final String LONG_PRESS_TIMEOUT = "long_press_timeout";
 
         /**
+         * The duration in milliseconds between the first tap's up event and the second tap's
+         * down event for an interaction to be considered part of the same multi-press.
+         * @hide
+         */
+        public static final String MULTI_PRESS_TIMEOUT = "multi_press_timeout";
+
+        /**
          * List of the enabled print services.
          *
          * N and beyond uses {@link #DISABLED_PRINT_SERVICES}. But this might be used in an upgrade
@@ -5839,6 +5868,8 @@ public final class Settings {
         /**
          * If nonzero, ANRs in invisible background processes bring up a dialog.
          * Otherwise, the process will be silently killed.
+         *
+         * Also prevents ANRs and crash dialogs from being suppressed.
          * @hide
          */
         public static final String ANR_SHOW_BACKGROUND = "anr_show_background";
@@ -5915,6 +5946,36 @@ public final class Settings {
                 INCALL_POWER_BUTTON_BEHAVIOR_SCREEN_OFF;
 
         /**
+         * What happens when the user presses the Back button while in-call
+         * and the screen is on.<br/>
+         * <b>Values:</b><br/>
+         * 0 - The Back buttons does nothing different.<br/>
+         * 1 - The Back button hangs up the current call.<br/>
+         *
+         * @hide
+         */
+        public static final String INCALL_BACK_BUTTON_BEHAVIOR = "incall_back_button_behavior";
+
+        /**
+         * INCALL_BACK_BUTTON_BEHAVIOR value for no action.
+         * @hide
+         */
+        public static final int INCALL_BACK_BUTTON_BEHAVIOR_NONE = 0x0;
+
+        /**
+         * INCALL_BACK_BUTTON_BEHAVIOR value for "hang up".
+         * @hide
+         */
+        public static final int INCALL_BACK_BUTTON_BEHAVIOR_HANGUP = 0x1;
+
+        /**
+         * INCALL_POWER_BUTTON_BEHAVIOR default value.
+         * @hide
+         */
+        public static final int INCALL_BACK_BUTTON_BEHAVIOR_DEFAULT =
+                INCALL_BACK_BUTTON_BEHAVIOR_NONE;
+
+        /**
          * Whether the device should wake when the wake gesture sensor detects motion.
          * @hide
          */
@@ -5925,6 +5986,18 @@ public final class Settings {
          * @hide
          */
         public static final String DOZE_ENABLED = "doze_enabled";
+
+        /**
+         * Whether the device should pulse on pick up gesture.
+         * @hide
+         */
+        public static final String DOZE_PULSE_ON_PICK_UP = "doze_pulse_on_pick_up";
+
+        /**
+         * Whether the device should pulse on double tap gesture.
+         * @hide
+         */
+        public static final String DOZE_PULSE_ON_DOUBLE_TAP = "doze_pulse_on_double_tap";
 
         /**
          * The current night mode that has been selected by the user.  Owned
@@ -6094,6 +6167,14 @@ public final class Settings {
                 "lock_screen_show_notifications";
 
         /**
+         * This preference stores the last stack active task time for each user, which affects what
+         * tasks will be visible in Overview.
+         * @hide
+         */
+        public static final String OVERVIEW_LAST_STACK_ACTIVE_TIME =
+                "overview_last_stack_active_time";
+
+        /**
          * List of TV inputs that are currently hidden. This is a string
          * containing the IDs of all hidden TV inputs. Each ID is encoded by
          * {@link android.net.Uri#encode(String)} and separated by ':'.
@@ -6198,12 +6279,6 @@ public final class Settings {
          * @hide
          */
         public static final String NIGHT_DISPLAY_CUSTOM_END_TIME = "night_display_custom_end_time";
-
-        /**
-         * Whether brightness should automatically adjust based on twilight state.
-         * @hide
-         */
-        public static final String BRIGHTNESS_USE_TWILIGHT = "brightness_use_twilight";
 
         /**
          * Names of the service components that the current user has explicitly allowed to
@@ -6324,6 +6399,19 @@ public final class Settings {
                 = "demo_user_setup_complete";
 
         /**
+         * Specifies whether the web action API is enabled.
+         *
+         * @hide
+         */
+        public static final String WEB_ACTION_ENABLED = "web_action_enabled";
+
+        /**
+         * Has this pairable device been paired or upgraded from a previously paired system.
+         * @hide
+         */
+        public static final String DEVICE_PAIRED = "device_paired";
+
+        /**
          * This are the settings to be backed up.
          *
          * NOTE: Settings are backed up and restored in the order they appear
@@ -6404,6 +6492,10 @@ public final class Settings {
             CAMERA_DOUBLE_TAP_POWER_GESTURE_DISABLED,
             SYSTEM_NAVIGATION_KEYS_ENABLED,
             QS_TILES,
+            DOZE_ENABLED,
+            DOZE_PULSE_ON_PICK_UP,
+            DOZE_PULSE_ON_DOUBLE_TAP,
+            NFC_PAYMENT_DEFAULT_COMPONENT
         };
 
         /**
@@ -6784,6 +6876,12 @@ public final class Settings {
         public static final String DOCK_SOUNDS_ENABLED = "dock_sounds_enabled";
 
         /**
+         * Whether to play a sound for dock events, only when an accessibility service is on.
+         * @hide
+         */
+        public static final String DOCK_SOUNDS_ENABLED_WHEN_ACCESSIBILITY = "dock_sounds_enabled_when_accessbility";
+
+        /**
          * URI for the "device locked" (keyguard shown) sound.
          * @hide
          */
@@ -7076,6 +7174,13 @@ public final class Settings {
         * @hide
         */
        public static final String MOBILE_DATA_ALWAYS_ON = "mobile_data_always_on";
+
+        /**
+         * Size of the event buffer for IP connectivity metrics.
+         * @hide
+         */
+        public static final String CONNECTIVITY_METRICS_BUFFER_SIZE =
+              "connectivity_metrics_buffer_size";
 
        /** {@hide} */
        public static final String NETSTATS_ENABLED = "netstats_enabled";
@@ -7502,6 +7607,13 @@ public final class Settings {
                "wimax_networks_available_notification_on";
 
        /**
+        * Whether we support connecting to Carrier Networks.
+        * @hide
+        **/
+        public static final String WIFI_CONNECT_CARRIER_NETWORKS =
+               "wifi_connect_carrier_networks";
+
+       /**
         * Delay (in seconds) before repeating the Wi-Fi networks available notification.
         * Connecting to a network will reset the timer.
         */
@@ -7913,21 +8025,80 @@ public final class Settings {
         public static final String PAC_CHANGE_DELAY = "pac_change_delay";
 
         /**
-         * Setting to turn off captive portal detection. Feature is enabled by
-         * default and the setting needs to be set to 0 to disable it.
+         * Don't attempt to detect captive portals.
          *
          * @hide
          */
+        public static final int CAPTIVE_PORTAL_MODE_IGNORE = 0;
+
+        /**
+         * When detecting a captive portal, display a notification that
+         * prompts the user to sign in.
+         *
+         * @hide
+         */
+        public static final int CAPTIVE_PORTAL_MODE_PROMPT = 1;
+
+        /**
+         * When detecting a captive portal, immediately disconnect from the
+         * network and do not reconnect to that network in the future.
+         *
+         * @hide
+         */
+        public static final int CAPTIVE_PORTAL_MODE_AVOID = 2;
+
+        /**
+         * What to do when connecting a network that presents a captive portal.
+         * Must be one of the CAPTIVE_PORTAL_MODE_* constants above.
+         *
+         * The default for this setting is CAPTIVE_PORTAL_MODE_PROMPT.
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_MODE = "captive_portal_mode";
+
+        /**
+         * Setting to turn off captive portal detection. Feature is enabled by
+         * default and the setting needs to be set to 0 to disable it.
+         *
+         * @deprecated use CAPTIVE_PORTAL_MODE_IGNORE to disable captive portal detection
+         * @hide
+         */
+        @Deprecated
         public static final String
                 CAPTIVE_PORTAL_DETECTION_ENABLED = "captive_portal_detection_enabled";
 
         /**
          * The server used for captive portal detection upon a new conection. A
          * 204 response code from the server is used for validation.
+         * TODO: remove this deprecated symbol.
          *
          * @hide
          */
         public static final String CAPTIVE_PORTAL_SERVER = "captive_portal_server";
+
+        /**
+         * The URL used for HTTPS captive portal detection upon a new connection.
+         * A 204 response code from the server is used for validation.
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_HTTPS_URL = "captive_portal_https_url";
+
+        /**
+         * The URL used for HTTP captive portal detection upon a new connection.
+         * A 204 response code from the server is used for validation.
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_HTTP_URL = "captive_portal_http_url";
+
+        /**
+         * The URL used for fallback HTTP captive portal detection when previous HTTP
+         * and HTTPS captive portal detection attemps did not return a conclusive answer.
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_FALLBACK_URL = "captive_portal_fallback_url";
 
         /**
          * Whether to use HTTPS for network validation. This is enabled by default and the setting
@@ -7937,6 +8108,14 @@ public final class Settings {
          * @hide
          */
         public static final String CAPTIVE_PORTAL_USE_HTTPS = "captive_portal_use_https";
+
+        /**
+         * Which User-Agent string to use in the header of the captive portal detection probes.
+         * The User-Agent field is unset when this setting has no value (HttpUrlConnection default).
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_USER_AGENT = "captive_portal_user_agent";
 
         /**
          * Whether network service discovery is enabled.
@@ -8311,6 +8490,13 @@ public final class Settings {
         public static final String CALL_AUTO_RETRY = "call_auto_retry";
 
         /**
+         * A setting that can be read whether the emergency affordance is currently needed.
+         * The value is a boolean (1 or 0).
+         * @hide
+         */
+        public static final String EMERGENCY_AFFORDANCE_NEEDED = "emergency_affordance_needed";
+
+        /**
          * See RIL_PreferredNetworkType in ril.h
          * @hide
          */
@@ -8330,7 +8516,11 @@ public final class Settings {
 
         /**
          * Control whether the process CPU usage meter should be shown.
+         *
+         * @deprecated This functionality is no longer available as of
+         * {@link android.os.Build.VERSION_CODES#N_MR1}.
          */
+        @Deprecated
         public static final String SHOW_PROCESSES = "show_processes";
 
         /**
@@ -8642,13 +8832,22 @@ public final class Settings {
         public static final String WFC_IMS_ENABLED = "wfc_ims_enabled";
 
         /**
-         * WFC Mode.
+         * WFC mode on home/non-roaming network.
          * <p>
          * Type: int - 2=Wi-Fi preferred, 1=Cellular preferred, 0=Wi-Fi only
          *
          * @hide
          */
         public static final String WFC_IMS_MODE = "wfc_ims_mode";
+
+        /**
+         * WFC mode on roaming network.
+         * <p>
+         * Type: int - see {@link WFC_IMS_MODE} for values
+         *
+         * @hide
+         */
+        public static final String WFC_IMS_ROAMING_MODE = "wfc_ims_roaming_mode";
 
         /**
          * Whether WFC roaming is enabled
@@ -8676,6 +8875,16 @@ public final class Settings {
          */
         public static final String EPHEMERAL_COOKIE_MAX_SIZE_BYTES =
                 "ephemeral_cookie_max_size_bytes";
+
+        /**
+         * Toggle to enable/disable the entire ephemeral feature. By default, ephemeral is
+         * enabled. Set to zero to disable.
+         * <p>
+         * Type: int (0 for false, 1 for true)
+         *
+         * @hide
+         */
+        public static final String ENABLE_EPHEMERAL_FEATURE = "enable_ephemeral_feature";
 
         /**
          * A mask applied to the ephemeral hash to generate the hash prefix.
@@ -8754,6 +8963,16 @@ public final class Settings {
          * @hide
          */
         public static final String RETAIL_DEMO_MODE_CONSTANTS = "retail_demo_mode_constants";
+
+        /**
+         * The reason for the settings database being downgraded. This is only for
+         * troubleshooting purposes and its value should not be interpreted in any way.
+         *
+         * Type: string
+         *
+         * @hide
+         */
+        public static final String DATABASE_DOWNGRADE_REASON = "database_downgrade_reason";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
@@ -9166,6 +9385,24 @@ public final class Settings {
          * @hide
          */
         public static final String CELL_ON = "cell_on";
+
+        /**
+         * Whether to show the high temperature warning notification.
+         * @hide
+         */
+        public static final String SHOW_TEMPERATURE_WARNING = "show_temperature_warning";
+
+        /**
+         * Temperature at which the high temperature warning notification should be shown.
+         * @hide
+         */
+        public static final String WARNING_TEMPERATURE = "warning_temperature";
+
+        /**
+         * Whether the diskstats logging task is enabled/disabled.
+         * @hide
+         */
+        public static final String ENABLE_DISKSTATS_LOGGING = "enable_diskstats_logging";
     }
 
     /**

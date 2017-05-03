@@ -547,7 +547,7 @@ public final class ShutdownThread extends Thread {
                             bluetooth.getState() == BluetoothAdapter.STATE_OFF;
                     if (!bluetoothOff) {
                         Log.w(TAG, "Disabling Bluetooth...");
-                        bluetooth.disable(false);  // disable but don't persist new state
+                        bluetooth.disable(mContext.getPackageName(), false);  // disable but don't persist new state
                     }
                 } catch (RemoteException ex) {
                     Log.e(TAG, "RemoteException during bluetooth shutdown", ex);
@@ -717,6 +717,14 @@ public final class ShutdownThread extends Thread {
         }
         if (!done[0]) {
             Log.w(TAG, "Timed out waiting for uncrypt.");
+            final int uncryptTimeoutError = 100;
+            String timeoutMessage = String.format("uncrypt_time: %d\n" + "uncrypt_error: %d\n",
+                    MAX_UNCRYPT_WAIT_TIME / 1000, uncryptTimeoutError);
+            try {
+                FileUtils.stringToFile(RecoverySystem.UNCRYPT_STATUS_FILE, timeoutMessage);
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to write timeout message to uncrypt status", e);
+            }
         }
     }
 }

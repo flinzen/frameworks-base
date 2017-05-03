@@ -62,6 +62,7 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.DropBoxManager;
 import android.os.Environment;
+import android.os.GraphicsEnvironment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.LocaleList;
@@ -108,6 +109,7 @@ import android.renderscript.RenderScriptCacheDir;
 import android.system.Os;
 import android.system.OsConstants;
 import android.system.ErrnoException;
+import android.webkit.WebView;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.IVoiceInteractor;
@@ -433,8 +435,10 @@ public final class ActivityThread {
     static final class NewIntentData {
         List<ReferrerIntent> intents;
         IBinder token;
+        boolean andPause;
         public String toString() {
-            return "NewIntentData{intents=" + intents + " token=" + token + "}";
+            return "NewIntentData{intents=" + intents + " token=" + token
+                    + " andPause=" + andPause +"}";
         }
     }
 
@@ -751,10 +755,12 @@ public final class ActivityThread {
                     configChanges, notResumed, config, overrideConfig, true, preserveWindow);
         }
 
-        public final void scheduleNewIntent(List<ReferrerIntent> intents, IBinder token) {
+        public final void scheduleNewIntent(
+                List<ReferrerIntent> intents, IBinder token, boolean andPause) {
             NewIntentData data = new NewIntentData();
             data.intents = intents;
             data.token = token;
+            data.andPause = andPause;
 
             sendMessage(H.NEW_INTENT, data);
         }
@@ -1037,10 +1043,21 @@ public final class ActivityThread {
             long dalvikMax = runtime.totalMemory() / 1024;
             long dalvikFree = runtime.freeMemory() / 1024;
             long dalvikAllocated = dalvikMax - dalvikFree;
+
+            Class[] classesToCount = new Class[] {
+                    ContextImpl.class,
+                    Activity.class,
+                    WebView.class,
+                    OpenSSLSocketImpl.class
+            };
+            long[] instanceCounts = VMDebug.countInstancesOfClasses(classesToCount, true);
+            long appContextInstanceCount = instanceCounts[0];
+            long activityInstanceCount = instanceCounts[1];
+            long webviewInstanceCount = instanceCounts[2];
+            long openSslSocketCount = instanceCounts[3];
+
             long viewInstanceCount = ViewDebug.getViewInstanceCount();
             long viewRootInstanceCount = ViewDebug.getViewRootImplCount();
-            long appContextInstanceCount = Debug.countInstancesOfClass(ContextImpl.class);
-            long activityInstanceCount = Debug.countInstancesOfClass(Activity.class);
             int globalAssetCount = AssetManager.getGlobalAssetCount();
             int globalAssetManagerCount = AssetManager.getGlobalAssetManagerCount();
             int binderLocalObjectCount = Debug.getBinderLocalObjectCount();
@@ -1048,7 +1065,6 @@ public final class ActivityThread {
             int binderDeathObjectCount = Debug.getBinderDeathObjectCount();
             long parcelSize = Parcel.getGlobalAllocSize();
             long parcelCount = Parcel.getGlobalAllocCount();
-            long openSslSocketCount = Debug.countInstancesOfClass(OpenSSLSocketImpl.class);
             SQLiteDebug.PagerStats stats = SQLiteDebug.getDatabaseInfo();
 
             dumpMemInfoTable(pw, memInfo, checkin, dumpFullInfo, dumpDalvik, dumpSummaryOnly,
@@ -1111,6 +1127,7 @@ public final class ActivityThread {
                     "Parcel count:", parcelCount);
             printRow(pw, TWO_COUNT_COLUMNS, "Death Recipients:", binderDeathObjectCount,
                     "OpenSSL Sockets:", openSslSocketCount);
+            printRow(pw, ONE_COUNT_COLUMN, "WebViews:", webviewInstanceCount);
 
             // SQLite mem info
             pw.println(" ");
@@ -2787,24 +2804,34 @@ public final class ActivityThread {
         }
     }
 
-    public final void performNewIntents(IBinder token, List<ReferrerIntent> intents) {
-        ActivityClientRecord r = mActivities.get(token);
-        if (r != null) {
-            final boolean resumed = !r.paused;
-            if (resumed) {
-                r.activity.mTemporaryPause = true;
-                mInstrumentation.callActivityOnPause(r.activity);
-            }
-            deliverNewIntents(r, intents);
-            if (resumed) {
-                r.activity.performResume();
-                r.activity.mTemporaryPause = false;
-            }
+    void performNewIntents(IBinder token, List<ReferrerIntent> intents, boolean andPause) {
+        final ActivityClientRecord r = mActivities.get(token);
+        if (r == null) {
+            return;
+        }
+
+        final boolean resumed = !r.paused;
+        if (resumed) {
+            r.activity.mTemporaryPause = true;
+            mInstrumentation.callActivityOnPause(r.activity);
+        }
+        deliverNewIntents(r, intents);
+        if (resumed) {
+            r.activity.performResume();
+            r.activity.mTemporaryPause = false;
+        }
+
+        if (r.paused && andPause) {
+            // In this case the activity was in the paused state when we delivered the intent,
+            // to guarantee onResume gets called after onNewIntent we temporarily resume the
+            // activity and pause again as the caller wanted.
+            performResumeActivity(token, false, "performNewIntents");
+            performPauseActivityIfNeeded(r, "performNewIntents");
         }
     }
 
     private void handleNewIntent(NewIntentData data) {
-        performNewIntents(data.token, data.intents);
+        performNewIntents(data.token, data.intents, data.andPause);
     }
 
     public void handleRequestAssistContextExtras(RequestAssistContextExtras cmd) {
@@ -3785,7 +3812,7 @@ public final class ActivityThread {
      * than our client -- for the server, stop means to save state and give
      * it the result when it is done, but the window may still be visible.
      * For the client, we want to call onStop()/onStart() to indicate when
-     * the activity's UI visibillity changes.
+     * the activity's UI visibility changes.
      */
     private void performStopActivityInner(ActivityClientRecord r,
             StopInfo info, boolean keepShown, boolean saveState, String reason) {
@@ -3959,6 +3986,9 @@ public final class ActivityThread {
         mSomeActivitiesChanged = true;
     }
 
+    // TODO: This method should be changed to use {@link #performStopActivityInner} to perform to
+    // stop operation on the activity to reduce code duplication and the chance of fixing a bug in
+    // one place and missing the other.
     private void handleSleeping(IBinder token, boolean sleeping) {
         ActivityClientRecord r = mActivities.get(token);
 
@@ -3969,6 +3999,10 @@ public final class ActivityThread {
 
         if (sleeping) {
             if (!r.stopped && !r.isPreHoneycomb()) {
+                if (!r.activity.mFinished && r.state == null) {
+                    callCallActivityOnSaveInstanceState(r);
+                }
+
                 try {
                     // Now we are idle.
                     r.activity.performStop(false /*preserveWindow*/);
@@ -4979,7 +5013,7 @@ public final class ActivityThread {
         WindowManagerGlobal.getInstance().trimMemory(level);
     }
 
-    private void setupGraphicsSupport(LoadedApk info, File cacheDir) {
+    private void setupGraphicsSupport(Context context, File cacheDir) {
         if (Process.isIsolated()) {
             // Isolated processes aren't going to do UI.
             return;
@@ -4989,11 +5023,10 @@ public final class ActivityThread {
             int uid = Process.myUid();
             String[] packages = getPackageManager().getPackagesForUid(uid);
 
-            // If there are several packages in this application we won't
-            // initialize the graphics disk caches
-            if (packages != null && packages.length == 1) {
+            if (packages != null) {
                 ThreadedRenderer.setupDiskCache(cacheDir);
                 RenderScriptCacheDir.setupDiskCache(cacheDir);
+                GraphicsEnvironment.setupGraphicsEnvironment(context);
             }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -5281,7 +5314,7 @@ public final class ActivityThread {
             final Context deviceContext = appContext.createDeviceProtectedStorageContext();
             final File codeCacheDir = deviceContext.getCodeCacheDir();
             if (codeCacheDir != null) {
-                setupGraphicsSupport(data.info, codeCacheDir);
+                setupGraphicsSupport(appContext, codeCacheDir);
             } else {
                 Log.e(TAG, "Unable to setupGraphicsSupport due to missing code-cache directory");
             }

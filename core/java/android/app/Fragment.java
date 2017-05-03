@@ -194,7 +194,7 @@ final class FragmentState implements Parcelable {
  * <div class="special reference">
  * <h3>Developer Guides</h3>
  * <p>For more information about using fragments, read the
- * <a href="{@docRoot}guide/topics/fundamentals/fragments.html">Fragments</a> developer guide.</p>
+ * <a href="{@docRoot}guide/components/fragments.html">Fragments</a> developer guide.</p>
  * </div>
  *
  * <a name="OlderPlatforms"></a>
@@ -1115,7 +1115,7 @@ public class Fragment implements ComponentCallbacks2, OnCreateContextMenuListene
      *
      * @param intent The intent to start.
      * @param options Additional options for how the Activity should be started.
-     * See {@link android.content.Context#startActivity(Intent, Bundle)
+     * See {@link android.content.Context#startActivity(Intent, Bundle)}
      * Context.startActivity(Intent, Bundle)} for more details.
      */
     public void startActivity(Intent intent, Bundle options) {

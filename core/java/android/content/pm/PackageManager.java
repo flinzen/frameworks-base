@@ -2826,6 +2826,14 @@ public abstract class PackageManager {
             @PermissionInfoFlags int flags) throws NameNotFoundException;
 
     /**
+     * Returns true if Permission Review Mode is enabled, false otherwise.
+     *
+     * @hide
+     */
+    @TestApi
+    public abstract boolean isPermissionReviewModeEnabled();
+
+    /**
      * Retrieve all of the information we know about a particular group of
      * permissions.
      *
@@ -3291,7 +3299,8 @@ public abstract class PackageManager {
      * Grant a runtime permission to an application which the application does not
      * already have. The permission must have been requested by the application.
      * If the application is not allowed to hold the permission, a {@link
-     * java.lang.SecurityException} is thrown.
+     * java.lang.SecurityException} is thrown. If the package or permission is
+     * invalid, a {@link java.lang.IllegalArgumentException} is thrown.
      * <p>
      * <strong>Note: </strong>Using this API requires holding
      * android.permission.GRANT_REVOKE_PERMISSIONS and if the user id is
@@ -3316,7 +3325,8 @@ public abstract class PackageManager {
      * #grantRuntimePermission(String, String, android.os.UserHandle)}. The
      * permission must have been requested by and granted to the application.
      * If the application is not allowed to hold the permission, a {@link
-     * java.lang.SecurityException} is thrown.
+     * java.lang.SecurityException} is thrown. If the package or permission is
+     * invalid, a {@link java.lang.IllegalArgumentException} is thrown.
      * <p>
      * <strong>Note: </strong>Using this API requires holding
      * android.permission.GRANT_REVOKE_PERMISSIONS and if the user id is
@@ -5431,7 +5441,7 @@ public abstract class PackageManager {
      * {@link #COMPONENT_ENABLED_STATE_DISABLED}, or
      * {@link #COMPONENT_ENABLED_STATE_DEFAULT}.  The last one means the
      * application's enabled state is based on the original information in
-     * the manifest as found in {@link ComponentInfo}.
+     * the manifest as found in {@link ApplicationInfo}.
      * @throws IllegalArgumentException if the named package does not exist.
      */
     public abstract int getApplicationEnabledSetting(String packageName);

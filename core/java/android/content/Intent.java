@@ -128,7 +128,7 @@ import static android.content.ContentProvider.maybeAddUserId;
  *     a list of people, which the user can browse through.  This example is a
  *     typical top-level entry into the Contacts application, showing you the
  *     list of people. Selecting a particular person to view would result in a
- *     new intent { <b>{@link #ACTION_VIEW} <i>content://contacts/N</i></b> }
+ *     new intent { <b>{@link #ACTION_VIEW} <i>content://contacts/people/N</i></b> }
  *     being used to start an activity to display that person.</p>
  *   </li>
  * </ul>
@@ -4314,6 +4314,14 @@ public class Intent implements Parcelable, Cloneable {
     public static final int FLAG_DEBUG_TRIAGED_MISSING = 0x00000100;
 
     /**
+     * Internal flag used to indicate ephemeral applications should not be
+     * considered when resolving the intent.
+     *
+     * @hide
+     */
+    public static final int FLAG_IGNORE_EPHEMERAL = 0x00000200;
+
+    /**
      * If set, the new activity is not kept in the history stack.  As soon as
      * the user navigates away from it, the activity is finished.  This may also
      * be set with the {@link android.R.styleable#AndroidManifestActivity_noHistory
@@ -6565,7 +6573,7 @@ public class Intent implements Parcelable, Cloneable {
      */
     public void removeUnsafeExtras() {
         if (mExtras != null) {
-            mExtras.filterValues();
+            mExtras = mExtras.filterValues();
         }
     }
 
@@ -8121,7 +8129,7 @@ public class Intent implements Parcelable, Cloneable {
      * @return Returns a bit mask of {@link #FILL_IN_ACTION},
      * {@link #FILL_IN_DATA}, {@link #FILL_IN_CATEGORIES}, {@link #FILL_IN_PACKAGE},
      * {@link #FILL_IN_COMPONENT}, {@link #FILL_IN_SOURCE_BOUNDS},
-     * {@link #FILL_IN_SELECTOR} and {@link #FILL_IN_CLIP_DATA indicating which fields were
+     * {@link #FILL_IN_SELECTOR} and {@link #FILL_IN_CLIP_DATA} indicating which fields were
      * changed.
      */
     @FillInFlags

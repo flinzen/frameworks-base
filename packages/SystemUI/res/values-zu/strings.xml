@@ -238,7 +238,7 @@
     <string name="data_usage_disabled_dialog_4g_title" msgid="1601769736881078016">"4G idatha imisiwe"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="4651001290947318931">"Idatha yeselula imisiwe"</string>
     <string name="data_usage_disabled_dialog_title" msgid="3932437232199671967">"Idatha imisiwe"</string>
-    <string name="data_usage_disabled_dialog" msgid="8453242888903772524">"Ngoba umkhawulo wakho wedatha osethiwe ufinyelelwe, idivayisi imise kancane ukusetshenziswa kwedatha ngesikhumbuzi salo mjikelezo.\n\nUkuqhuba futhi kungaholela kuzindleko kusuka kwinkampani yakho yenethiwekhi."</string>
+    <string name="data_usage_disabled_dialog" msgid="1841738975235283398">"Umkhawulo wedatha owusethayo ufikiwe. Awusasebenzisi idatha yeselula.\n\nUma uqalisa kabusha, izindleko zingasebenza ekusetshenzisweni kwedatha."</string>
     <string name="data_usage_disabled_dialog_enable" msgid="1412395410306390593">"Qalisa kabusha"</string>
     <string name="status_bar_settings_signal_meter_disconnected" msgid="1940231521274147771">"Alukho uxhumano lwe-Inthanethi"</string>
     <string name="status_bar_settings_signal_meter_wifi_nossid" msgid="6557486452774597820">"I-Wi-Fi ixhunyiwe"</string>
@@ -404,21 +404,29 @@
     <string name="device_owned_footer" msgid="3802752663326030053">"Idivayisi inganganyelwa"</string>
     <string name="profile_owned_footer" msgid="8021888108553696069">"Iphrofayela ingaqashwa"</string>
     <string name="vpn_footer" msgid="2388611096129106812">"Inethiwekhi kungenzeka iqashiwe"</string>
+    <string name="branded_vpn_footer" msgid="2168111859226496230">"Inethiwekhi kungenzeka iqashiwe"</string>
     <string name="monitoring_title_device_owned" msgid="7121079311903859610">"Ukwengamela idivayisi"</string>
     <string name="monitoring_title_profile_owned" msgid="6790109874733501487">"Ukuqapha iphrofayela"</string>
     <string name="monitoring_title" msgid="169206259253048106">"Ukuqashwa kwenethiwekhi"</string>
+    <string name="monitoring_subtitle_vpn" msgid="876537538087857300">"I-VPN"</string>
+    <string name="monitoring_subtitle_network_logging" msgid="5569072711320784030">"Ukungena kwenethiwekhi"</string>
     <string name="disable_vpn" msgid="4435534311510272506">"Khubaza i-VPN"</string>
     <string name="disconnect_vpn" msgid="1324915059568548655">"Nqamula i-VPN"</string>
-    <string name="monitoring_description_device_owned" msgid="5780988291898461883">"Idivayisi yakho iphethwe yi-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmlawuli wakho angaqapha aphinde aphathe izilungiselelo, ukufinyelela kwenkampani, izinhlelo zokusebenza, idatha ehlotshaniswa nedivayisi yakho, kanye nolwazi lwendawo yedivayisi yakho. Ukuze uthole olunye ulwazi xhumana nomlawuli wakho."</string>
+    <string name="monitoring_description_device_owned" msgid="220006422537330981">"Idivayisi yakho iphethwe ngu-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmlawuli wakho angangamela futhi aphathe izilungiselelo, ukufinyelela kwebhizinisi, izinhlelo zokusebenza, idatha ephathelene nedivayisi yakho, nolwazi lendawo ledivayisi yakho. Ngolwazi olubanzi, xhumana nomlawuli wakho."</string>
+    <string name="monitoring_description_do_body_vpn" msgid="8255218762488901796">"Uxhumeke ku-<xliff:g id="VPN_APP">%1$s</xliff:g>, engaqapha umsebenzi wenethiwekhi yakho, ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi."</string>
+    <string name="monitoring_description_vpn_settings_separator" msgid="1933186756733474388">" "</string>
+    <string name="monitoring_description_vpn_settings" msgid="8869300202410505143">"Vula izilungiselelo ze-VPN"</string>
+    <string name="monitoring_description_network_logging" msgid="7223505523384076027">"Umlawuli wakho uvule ukungena kwenethiwekhi, okuhlola ithrafikhi kudivayisi yakho.\n\nNgolwazi olubanzi xhumana nomlawuli wakho."</string>
     <string name="monitoring_description_vpn" msgid="4445150119515393526">"Unikeze uhlelo lokusebenza imvume yokusetha ukuxhumana kwe-VPN.\n\nLolu hlelo lokusebenza lungahlola idivayisi yakho nomsebenzi wenethiwekhi, ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi."</string>
-    <string name="monitoring_description_vpn_device_owned" msgid="3090670777499161246">"Idivayisi yakho iphethwe yi-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmlawuli wakho angaqapha aphinde aphathe izilungiselelo, ukufinyelela kwezinkampani, izinhlelo zokusebenza, idatha ehlotshaniswa nedivayisi yakho, kanye nolwazi lwendawo yedivayisi yakho.\n\nUxhumeke ku-VPN, engaqapha umsebenzi wakho wenethiwekhi, ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi.\n\nUkuze uthole olunye ulwazi, xhumana nomlawuli wakho."</string>
-    <string name="monitoring_description_vpn_profile_owned" msgid="2054949132145039290">"Iphrofayela yakho yomsebenzi iphethwe yi-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmqondisi wakho unamandla wokuqaphela umsebenzi wenethiwekhi yakho ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi.\n\nUkuze uthole olunye ulwazi, xhumana nomqondisi wakho.\n\nFuthi uxhumeke ku-VPN, engaqaphela umsebenzi wenethiwekhi yakho."</string>
+    <string name="monitoring_description_vpn_device_owned" msgid="6741053132592567634">"Idivayisi yakho iphethwe ngu-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmlawuli wakho angangamela futhi aphathe izilungiselelo, ukufinyelela kwebhizinisi, izinhlelo zokusebenza, idatha ephathelene nedivayisi yakho, nolwazi lendawo ledivayisi yakho.\n\nUxhumeke ku-VPN, engangamela umsebenzi wakho wenethiwekhi, kufaka phakathi ama-imeyili, izinhlelo zokusebenza, namawebhusayithi.\n\nNgolwazi olubanzi, xhumana nomlawuli wakho."</string>
+    <string name="monitoring_description_vpn_profile_owned" msgid="2958019119161161530">"Iphrofayela yakho yomsebenzi iphethwe ngu-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmlawuli wakho uyakwazi ukwengamela umsebenzi wakho wenethiwekhi kufaka phakathi ama-imeyili, izinhlelo zokusebenza, namawebhusayithi.\n\nNgolwazi olubanzi, xhumana nomlawuli wakho.\n\nFuthi uxhumekile ku-VPN, engangamela umsebenzi wakho wenethiwekhi."</string>
     <string name="legacy_vpn_name" msgid="6604123105765737830">"I-VPN"</string>
     <string name="monitoring_description_app" msgid="6259179342284742878">"Uxhumeke ku-<xliff:g id="APPLICATION">%1$s</xliff:g>, engahlola umsebenzi wakho wenethiwekhi ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi."</string>
     <string name="monitoring_description_app_personal" msgid="484599052118316268">"Uxhumeke ku-<xliff:g id="APPLICATION">%1$s</xliff:g>, engahlola umsebenzi wenethiwekhi yakho yomuntu siqu, ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi."</string>
-    <string name="monitoring_description_app_work" msgid="1754325860918060897">"Iphrofayela yakho yomsebenzi iphethwe yi-<xliff:g id="ORGANIZATION">%1$s</xliff:g>. Ixhumeke ku-<xliff:g id="APPLICATION">%2$s</xliff:g>, engahlola umsebenzi wenethiwekhi yakho yokusebenza, ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi.\n\nUkuze uthole olunye ulwazi, xhumana nomqondisi wakho."</string>
+    <string name="branded_monitoring_description_app_personal" msgid="2669518213949202599">"Uxhumeke ku-<xliff:g id="APPLICATION">%1$s</xliff:g>, engaqapha umsebenzi wakho womuntu siqu wenethiwekhi, ofaka ama-imeyili, izinhlelo zokusebenza, namawebhusayithi."</string>
+    <string name="monitoring_description_app_work" msgid="7777228449969022305">"Iphrofayela yakho yomsebenzi iphethwe ngu-<xliff:g id="ORGANIZATION">%1$s</xliff:g>. Ixhumeke ku-<xliff:g id="APPLICATION">%2$s</xliff:g>, engangamela umsebenzi wakho wenethiwekhi, kufaka phakathi ama-imeyili, izinhlelo zokusebenza, namawebhusayithi.\n\nNgolwazi olubanzi, xhumana nomlawuli wakho."</string>
     <string name="monitoring_description_app_personal_work" msgid="4946600443852045903">"Iphrofayela yakho yomsebenzi iphethwe yi-<xliff:g id="ORGANIZATION">%1$s</xliff:g>. Ixhumeke ku-<xliff:g id="APPLICATION_WORK">%2$s</xliff:g>, engahlola umsebenzi wenethiwekhi yakho yomsebenzi, ofaka ama-imeyili, izinhlelo zokusebenza namawebhusayithi.\n\nFuthi uxhumeke ku-<xliff:g id="APPLICATION_PERSONAL">%3$s</xliff:g>, engahlola umsebenzi wenethiwekhi yakho yomuntu siqu."</string>
-    <string name="monitoring_description_vpn_app_device_owned" msgid="4970443827043261703">"Idivayisi yakho iphethwe yi-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmqondisi wakho angaqaphela aphinde aphathe izilungiselelo, ukufinyelela kwezinkampani, izinhlelo zokusebenza, idatha ehlotshaniswa nedivayisi yakho, nolwazi lendawo yedivayisi yakho.\n\nUxhumeke ku-<xliff:g id="APPLICATION">%2$s</xliff:g>, engaqaphela umsebenzi wakho wenethiwekhi, ofaka ama-imeyili, izinhlelo zokusebenza namawebhusayithi.\n\nUkuze uthole olunye ulwazi, xhumana nomqondisi wakho."</string>
+    <string name="monitoring_description_vpn_app_device_owned" msgid="6157262536135989204">"Idivayisi yakho iphethwe ngu-<xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nUmlawuli wakho angangamela futhi aphathe izilungiselelo, ukufinyelela kwebhizinisi, izinhlelo zokusebenza, idatha ephathelene nedivayisi yakho, nolwazi lendawo ledivayisi yakho.\n\nUxhumeke ku-<xliff:g id="APPLICATION">%2$s</xliff:g>, engangamela umsebenzi wakho wenethiekhi, kufaka phakathi ama-imeyili, izinhlelo zokusebenza, namawebhusayithi.\n\nNgolwazi olubanzi, xhumana nomlawuli wakho."</string>
     <string name="keyguard_indication_trust_disabled" msgid="7412534203633528135">"Idivayisi izohlala ikhiyekile uze uyivule ngokwenza"</string>
     <string name="hidden_notifications_title" msgid="7139628534207443290">"Thola izaziso ngokushesha"</string>
     <string name="hidden_notifications_text" msgid="2326409389088668981">"Ibone ngaphambi kokuthi uyivule"</string>
@@ -429,7 +437,8 @@
     <string name="accessibility_volume_expand" msgid="5946812790999244205">"Nweba"</string>
     <string name="accessibility_volume_collapse" msgid="3609549593031810875">"Goqa"</string>
     <string name="screen_pinning_title" msgid="3273740381976175811">"Isikrini siphiniwe"</string>
-    <string name="screen_pinning_description" msgid="7238941806855968768">"Lokhu kuyigcina ekubukekeni uze ususe ukuphinda. Thinta uphinde ubambe okuthi Emuva ukuze ususe ukuphina."</string>
+    <string name="screen_pinning_description" msgid="8909878447196419623">"Lokhu kuyigcina ibukeka uze ususe ukuphina. Thinta uphinde ubambe okuthi Emuva Nokubuka konke ukuze ususe ukuphina."</string>
+    <string name="screen_pinning_description_accessible" msgid="426190689254018656">"Lokhu kuyigcina ibukeka uze ususe ukuphina. Thinta uphinde ubambe Ukubuka konke ukuze ususe ukuphina."</string>
     <string name="screen_pinning_positive" msgid="3783985798366751226">"Ngiyitholile"</string>
     <string name="screen_pinning_negative" msgid="3741602308343880268">"Cha ngiyabonga"</string>
     <string name="quick_settings_reset_confirmation_title" msgid="748792586749897883">"Fihla i-<xliff:g id="TILE_LABEL">%1$s</xliff:g>?"</string>
@@ -492,8 +501,6 @@
     <string name="clock_seconds_desc" msgid="6282693067130470675">"Bonisa amasekhondi wewashi kubha yesimo. Ingathinta impilo yebhethri."</string>
     <string name="qs_rearrange" msgid="8060918697551068765">"Hlela kabusha izilungiselelo ezisheshayo"</string>
     <string name="show_brightness" msgid="6613930842805942519">"Bonisa ukukhanya kuzilungiselelo ezisheshayo"</string>
-    <string name="overview_nav_bar_gesture" msgid="8579814204727917764">"Nika amandla ukuthinta kokuswayiphela phezulu ukuhlukanisa isikrini"</string>
-    <string name="overview_nav_bar_gesture_desc" msgid="6329167382305102615">"Nika amandla ukuthinta ukuze ungene ekuhlukaniseni isikrini ngokuswayiphela phezulu kusukela kunkinobho yokubuka konke"</string>
     <string name="experimental" msgid="6198182315536726162">"Okokulinga"</string>
     <string name="enable_bluetooth_title" msgid="5027037706500635269">"Vula i-Bluetooth?"</string>
     <string name="enable_bluetooth_message" msgid="9106595990708985385">"Ukuze uxhume ikhibhodi yakho nethebhulethi yakho, kufanele uqale ngokuvula i-Bluetooth."</string>
@@ -651,4 +658,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="7806613775728380737">"Vula izilungiselelo ze-<xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="7839992848995240393">"Hlela uhlelo lwezilungiselelo."</string>
     <string name="accessibility_quick_settings_page" msgid="5032979051755200721">"Ikhasi <xliff:g id="ID_1">%1$d</xliff:g> kwangu-<xliff:g id="ID_2">%2$d</xliff:g>"</string>
+    <string name="cant_silence_or_block" msgid="999689262131488625">"Izaziso azikwazi ukuthuliswa noma ukuvinjelwa"</string>
+    <string name="high_temp_title" msgid="4589508026407318374">"Ifoni iyafudumala"</string>
+    <string name="high_temp_notif_message" msgid="5642466103153429279">"Ezinye izici zikhawulelwe ngenkathi ifoni iphola"</string>
+    <string name="high_temp_dialog_message" msgid="6840700639374113553">"Ifoni yakho izozama ngokuzenzakalela ukuphola. Ungasasebenzisa ifoni yakho, kodwa ingasebenza ngokungasheshi.\n\nUma ifoni yakho isipholile, izosebenza ngokuvamile."</string>
 </resources>

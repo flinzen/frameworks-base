@@ -34,6 +34,8 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
+import com.android.internal.logging.MetricsLogger;
+import com.android.internal.logging.MetricsProto.MetricsEvent;
 
 import java.net.URISyntaxException;
 import java.util.Locale;
@@ -112,6 +114,9 @@ public class HelpUtils {
                 helpMenuItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
+                        MetricsLogger.action(activity,
+                            MetricsEvent.ACTION_SETTING_HELP_AND_FEEDBACK,
+                            intent.getStringExtra(EXTRA_CONTEXT));
                         try {
                             activity.startActivityForResult(intent, 0);
                         } catch (ActivityNotFoundException exc) {
@@ -180,12 +185,18 @@ public class HelpUtils {
                     {resources.getString(R.string.config_helpPackageNameKey)};
             String[] packageNameValue =
                     {resources.getString(R.string.config_helpPackageNameValue)};
-            String intentExtraKey =
+            String helpIntentExtraKey =
                     resources.getString(R.string.config_helpIntentExtraKey);
-            String intentNameKey =
+            String helpIntentNameKey =
                     resources.getString(R.string.config_helpIntentNameKey);
-            intent.putExtra(intentExtraKey, packageNameKey);
-            intent.putExtra(intentNameKey, packageNameValue);
+            String feedbackIntentExtraKey =
+                    resources.getString(R.string.config_feedbackIntentExtraKey);
+            String feedbackIntentNameKey =
+                    resources.getString(R.string.config_feedbackIntentNameKey);
+            intent.putExtra(helpIntentExtraKey, packageNameKey);
+            intent.putExtra(helpIntentNameKey, packageNameValue);
+            intent.putExtra(feedbackIntentExtraKey, packageNameKey);
+            intent.putExtra(feedbackIntentNameKey, packageNameValue);
         }
         intent.putExtra(EXTRA_THEME, 1 /* Light, dark action bar */);
         TypedArray array = context.obtainStyledAttributes(new int[]{android.R.attr.colorPrimary});

@@ -236,6 +236,7 @@ public class ConnectivityServiceTest extends AndroidTestCase {
         private final IdleableHandlerThread mHandlerThread;
         private final ConditionVariable mDisconnected = new ConditionVariable();
         private final ConditionVariable mNetworkStatusReceived = new ConditionVariable();
+        private final ConditionVariable mPreventReconnectReceived = new ConditionVariable();
         private int mScore;
         private NetworkAgent mNetworkAgent;
         private int mStartKeepaliveError = PacketKeepalive.ERROR_HARDWARE_UNSUPPORTED;
@@ -290,6 +291,11 @@ public class ConnectivityServiceTest extends AndroidTestCase {
                 public void networkStatus(int status, String redirectUrl) {
                     mRedirectUrl = redirectUrl;
                     mNetworkStatusReceived.open();
+                }
+
+                @Override
+                protected void preventAutomaticReconnect() {
+                    mPreventReconnectReceived.open();
                 }
             };
             // Waits for the NetworkAgent to be registered, which includes the creation of the
@@ -375,11 +381,6 @@ public class ConnectivityServiceTest extends AndroidTestCase {
             mWrappedNetworkMonitor.gen204ProbeResult = 200;
             mWrappedNetworkMonitor.gen204ProbeRedirectUrl = redirectUrl;
             connect(false);
-            waitFor(new Criteria() { public boolean get() {
-                NetworkCapabilities caps = mCm.getNetworkCapabilities(getNetwork());
-                return caps != null && caps.hasCapability(NET_CAPABILITY_CAPTIVE_PORTAL);} });
-            mWrappedNetworkMonitor.gen204ProbeResult = 500;
-            mWrappedNetworkMonitor.gen204ProbeRedirectUrl = null;
         }
 
         public void disconnect() {
@@ -389,6 +390,10 @@ public class ConnectivityServiceTest extends AndroidTestCase {
 
         public Network getNetwork() {
             return new Network(mNetworkAgent.netId);
+        }
+
+        public ConditionVariable getPreventReconnectReceived() {
+            return mPreventReconnectReceived;
         }
 
         public ConditionVariable getDisconnectedCV() {
@@ -597,7 +602,21 @@ public class ConnectivityServiceTest extends AndroidTestCase {
 
         @Override
         protected CaptivePortalProbeResult isCaptivePortal() {
-            return new CaptivePortalProbeResult(gen204ProbeResult, gen204ProbeRedirectUrl);
+            if (!mIsCaptivePortalCheckEnabled) { return new CaptivePortalProbeResult(204); }
+            return new CaptivePortalProbeResult(gen204ProbeResult, gen204ProbeRedirectUrl, null);
+        }
+    }
+
+    private class WrappedAvoidBadWifiTracker extends AvoidBadWifiTracker {
+        public boolean configRestrictsAvoidBadWifi;
+
+        public WrappedAvoidBadWifiTracker(Context c, Handler h, Runnable r) {
+            super(c, h, r);
+        }
+
+        @Override
+        public boolean configRestrictsAvoidBadWifi() {
+            return configRestrictsAvoidBadWifi;
         }
     }
 
@@ -743,9 +762,13 @@ public class ConnectivityServiceTest extends AndroidTestCase {
         mService.systemReady();
         mCm = new WrappedConnectivityManager(getContext(), mService);
         mCm.bindProcessToNetwork(null);
+
+        // Ensure that the default setting for Captive Portals is used for most tests
+        setCaptivePortalMode(Settings.Global.CAPTIVE_PORTAL_MODE_PROMPT);
     }
 
     public void tearDown() throws Exception {
+        setMobileDataAlwaysOn(false);
         if (mCellNetworkAgent != null) { mCellNetworkAgent.disconnect(); }
         if (mWiFiNetworkAgent != null) { mWiFiNetworkAgent.disconnect(); }
         mCellNetworkAgent = mWiFiNetworkAgent = null;
@@ -1703,6 +1726,47 @@ public class ConnectivityServiceTest extends AndroidTestCase {
         validatedCallback.expectCallback(CallbackState.LOST, mWiFiNetworkAgent);
     }
 
+    @LargeTest
+    public void testAvoidOrIgnoreCaptivePortals() {
+        final TestNetworkCallback captivePortalCallback = new TestNetworkCallback();
+        final NetworkRequest captivePortalRequest = new NetworkRequest.Builder()
+                .addCapability(NET_CAPABILITY_CAPTIVE_PORTAL).build();
+        mCm.registerNetworkCallback(captivePortalRequest, captivePortalCallback);
+
+        final TestNetworkCallback validatedCallback = new TestNetworkCallback();
+        final NetworkRequest validatedRequest = new NetworkRequest.Builder()
+                .addCapability(NET_CAPABILITY_VALIDATED).build();
+        mCm.registerNetworkCallback(validatedRequest, validatedCallback);
+
+        setCaptivePortalMode(Settings.Global.CAPTIVE_PORTAL_MODE_AVOID);
+        // Bring up a network with a captive portal.
+        // Expect it to fail to connect and not result in any callbacks.
+        mWiFiNetworkAgent = new MockNetworkAgent(TRANSPORT_WIFI);
+        String firstRedirectUrl = "http://example.com/firstPath";
+
+        ConditionVariable disconnectCv = mWiFiNetworkAgent.getDisconnectedCV();
+        ConditionVariable avoidCv = mWiFiNetworkAgent.getPreventReconnectReceived();
+        mWiFiNetworkAgent.connectWithCaptivePortal(firstRedirectUrl);
+        waitFor(disconnectCv);
+        waitFor(avoidCv);
+
+        assertNoCallbacks(captivePortalCallback, validatedCallback);
+
+        // Now test ignore mode.
+        setCaptivePortalMode(Settings.Global.CAPTIVE_PORTAL_MODE_IGNORE);
+
+        // Bring up a network with a captive portal.
+        // Since we're ignoring captive portals, the network will validate.
+        mWiFiNetworkAgent = new MockNetworkAgent(TRANSPORT_WIFI);
+        String secondRedirectUrl = "http://example.com/secondPath";
+        mWiFiNetworkAgent.connectWithCaptivePortal(secondRedirectUrl);
+
+        // Expect NET_CAPABILITY_VALIDATED onAvailable callback.
+        validatedCallback.expectCallback(CallbackState.AVAILABLE, mWiFiNetworkAgent);
+        // But there should be no CaptivePortal callback.
+        captivePortalCallback.assertNoCallback();
+    }
+
     @SmallTest
     public void testInvalidNetworkSpecifier() {
         boolean execptionCalled = true;
@@ -1843,6 +1907,90 @@ public class ConnectivityServiceTest extends AndroidTestCase {
         mCm.unregisterNetworkCallback(cellNetworkCallback);
     }
 
+    private void setCaptivePortalMode(int mode) {
+        ContentResolver cr = mServiceContext.getContentResolver();
+        Settings.Global.putInt(cr, Settings.Global.CAPTIVE_PORTAL_MODE, mode);
+    }
+
+    private void setMobileDataAlwaysOn(boolean enable) {
+        ContentResolver cr = mServiceContext.getContentResolver();
+        Settings.Global.putInt(cr, Settings.Global.MOBILE_DATA_ALWAYS_ON, enable ? 1 : 0);
+        mService.updateMobileDataAlwaysOn();
+        mService.waitForIdle();
+    }
+
+    private boolean isForegroundNetwork(MockNetworkAgent network) {
+        NetworkCapabilities nc = mCm.getNetworkCapabilities(network.getNetwork());
+        assertNotNull(nc);
+        return nc.hasCapability(NET_CAPABILITY_FOREGROUND);
+    }
+
+    @SmallTest
+    public void testBackgroundNetworks() throws Exception {
+        // Create a background request. We can't do this ourselves because ConnectivityService
+        // doesn't have an API for it. So just turn on mobile data always on.
+        setMobileDataAlwaysOn(true);
+        final NetworkRequest request = new NetworkRequest.Builder().build();
+        final NetworkRequest fgRequest = new NetworkRequest.Builder()
+                .addCapability(NET_CAPABILITY_FOREGROUND).build();
+        final TestNetworkCallback callback = new TestNetworkCallback();
+        final TestNetworkCallback fgCallback = new TestNetworkCallback();
+        mCm.registerNetworkCallback(request, callback);
+        mCm.registerNetworkCallback(fgRequest, fgCallback);
+
+        mCellNetworkAgent = new MockNetworkAgent(TRANSPORT_CELLULAR);
+        mCellNetworkAgent.connect(true);
+        callback.expectCallback(CallbackState.AVAILABLE, mCellNetworkAgent);
+        fgCallback.expectCallback(CallbackState.AVAILABLE, mCellNetworkAgent);
+        assertTrue(isForegroundNetwork(mCellNetworkAgent));
+
+        mWiFiNetworkAgent = new MockNetworkAgent(TRANSPORT_WIFI);
+        mWiFiNetworkAgent.connect(true);
+
+        // When wifi connects, cell lingers.
+        callback.expectCallback(CallbackState.AVAILABLE, mWiFiNetworkAgent);
+        fgCallback.expectCallback(CallbackState.AVAILABLE, mWiFiNetworkAgent);
+        callback.expectCallback(CallbackState.LOSING, mCellNetworkAgent);
+        fgCallback.expectCallback(CallbackState.LOSING, mCellNetworkAgent);
+        assertTrue(isForegroundNetwork(mCellNetworkAgent));
+        assertTrue(isForegroundNetwork(mWiFiNetworkAgent));
+
+        // When lingering is complete, cell is still there but is now in the background.
+        fgCallback.expectCallback(CallbackState.LOST, mCellNetworkAgent, TEST_LINGER_DELAY_MS);
+        callback.assertNoCallback();
+        assertFalse(isForegroundNetwork(mCellNetworkAgent));
+        assertTrue(isForegroundNetwork(mWiFiNetworkAgent));
+
+        // File a cell request and check that cell comes into the foreground.
+        final NetworkRequest cellRequest = new NetworkRequest.Builder()
+                .addTransportType(TRANSPORT_CELLULAR).build();
+        final TestNetworkCallback cellCallback = new TestNetworkCallback();
+        mCm.requestNetwork(cellRequest, cellCallback);
+        cellCallback.expectCallback(CallbackState.AVAILABLE, mCellNetworkAgent);
+        fgCallback.expectCallback(CallbackState.AVAILABLE, mCellNetworkAgent);
+        callback.assertNoCallback();  // Because the network is already up.
+        assertTrue(isForegroundNetwork(mCellNetworkAgent));
+        assertTrue(isForegroundNetwork(mWiFiNetworkAgent));
+
+        // Release the request. The network immediately goes into the background, since it was not
+        // lingering.
+        mCm.unregisterNetworkCallback(cellCallback);
+        fgCallback.expectCallback(CallbackState.LOST, mCellNetworkAgent);
+        callback.assertNoCallback();
+        assertFalse(isForegroundNetwork(mCellNetworkAgent));
+        assertTrue(isForegroundNetwork(mWiFiNetworkAgent));
+
+        // Disconnect wifi and check that cell is foreground again.
+        mWiFiNetworkAgent.disconnect();
+        callback.expectCallback(CallbackState.LOST, mWiFiNetworkAgent);
+        fgCallback.expectCallback(CallbackState.LOST, mWiFiNetworkAgent);
+        fgCallback.expectCallback(CallbackState.AVAILABLE, mCellNetworkAgent);
+        assertTrue(isForegroundNetwork(mCellNetworkAgent));
+
+        mCm.unregisterNetworkCallback(callback);
+        mCm.unregisterNetworkCallback(fgCallback);
+    }
+
     @SmallTest
     public void testRequestBenchmark() throws Exception {
         // Benchmarks connecting and switching performance in the presence of a large number of
@@ -1948,8 +2096,7 @@ public class ConnectivityServiceTest extends AndroidTestCase {
 
         // Turn on mobile data always on. The factory starts looking again.
         testFactory.expectAddRequests(1);
-        Settings.Global.putInt(cr, Settings.Global.MOBILE_DATA_ALWAYS_ON, 1);
-        mService.updateMobileDataAlwaysOn();
+        setMobileDataAlwaysOn(true);
         testFactory.waitForNetworkRequests(2);
         assertTrue(testFactory.getMyStartRequested());
 
@@ -1969,8 +2116,7 @@ public class ConnectivityServiceTest extends AndroidTestCase {
 
         // Turn off mobile data always on and expect the request to disappear...
         testFactory.expectRemoveRequests(1);
-        Settings.Global.putInt(cr, Settings.Global.MOBILE_DATA_ALWAYS_ON, 0);
-        mService.updateMobileDataAlwaysOn();
+        setMobileDataAlwaysOn(false);
         testFactory.waitForNetworkRequests(1);
 
         // ...  and cell data to be torn down.

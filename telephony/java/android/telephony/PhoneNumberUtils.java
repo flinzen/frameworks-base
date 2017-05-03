@@ -24,10 +24,12 @@ import com.android.i18n.phonenumbers.ShortNumberUtil;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.location.CountryDetector;
 import android.net.Uri;
 import android.os.SystemProperties;
+import android.os.PersistableBundle;
 import android.provider.Contacts;
 import android.provider.ContactsContract;
 import android.telecom.PhoneAccount;
@@ -2105,7 +2107,7 @@ public class PhoneNumberUtils
      *   number provided by the RIL and SIM card. The caller must have
      *   the READ_PHONE_STATE credential.
      *
-     * @param context a non-null {@link Context}.
+     * @param context {@link Context}.
      * @param subId the subscription id of the SIM.
      * @param number the number to look up.
      * @return true if the number is in the list of voicemail. False
@@ -2114,25 +2116,54 @@ public class PhoneNumberUtils
      * @hide
      */
     public static boolean isVoiceMailNumber(Context context, int subId, String number) {
-        String vmNumber;
+        String vmNumber, mdn;
         try {
             final TelephonyManager tm;
             if (context == null) {
                 tm = TelephonyManager.getDefault();
+                if (DBG) log("isVoiceMailNumber: default tm");
             } else {
                 tm = TelephonyManager.from(context);
+                if (DBG) log("isVoiceMailNumber: tm from context");
             }
             vmNumber = tm.getVoiceMailNumber(subId);
+            mdn = tm.getLine1Number(subId);
+            if (DBG) log("isVoiceMailNumber: mdn=" + mdn + ", vmNumber=" + vmNumber
+                    + ", number=" + number);
         } catch (SecurityException ex) {
+            if (DBG) log("isVoiceMailNumber: SecurityExcpetion caught");
             return false;
         }
         // Strip the separators from the number before comparing it
         // to the list.
         number = extractNetworkPortionAlt(number);
+        if (TextUtils.isEmpty(number)) {
+            if (DBG) log("isVoiceMailNumber: number is empty after stripping");
+            return false;
+        }
 
-        // compare tolerates null so we need to make sure that we
-        // don't return true when both are null.
-        return !TextUtils.isEmpty(number) && compare(number, vmNumber);
+        // check if the carrier considers MDN to be an additional voicemail number
+        boolean compareWithMdn = false;
+        if (context != null) {
+            CarrierConfigManager configManager = (CarrierConfigManager)
+                    context.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+            if (configManager != null) {
+                PersistableBundle b = configManager.getConfigForSubId(subId);
+                if (b != null) {
+                    compareWithMdn = b.getBoolean(CarrierConfigManager.
+                            KEY_MDN_IS_ADDITIONAL_VOICEMAIL_NUMBER_BOOL);
+                    if (DBG) log("isVoiceMailNumber: compareWithMdn=" + compareWithMdn);
+                }
+            }
+        }
+
+        if (compareWithMdn) {
+            if (DBG) log("isVoiceMailNumber: treating mdn as additional vm number");
+            return compare(number, vmNumber) || compare(number, mdn);
+        } else {
+            if (DBG) log("isVoiceMailNumber: returning regular compare");
+            return compare(number, vmNumber);
+        }
     }
 
     /**
@@ -3021,4 +3052,79 @@ public class PhoneNumberUtils
         return SubscriptionManager.getDefaultVoiceSubscriptionId();
     }
     //==== End of utility methods used only in compareStrictly() =====
+
+
+    /*
+     * The config held calling number conversion map, expected to convert to emergency number.
+     */
+    private static final String[] CONVERT_TO_EMERGENCY_MAP = Resources.getSystem().getStringArray(
+            com.android.internal.R.array.config_convert_to_emergency_number_map);
+    /**
+     * Check whether conversion to emergency number is enabled
+     *
+     * @return {@code true} when conversion to emergency numbers is enabled,
+     *         {@code false} otherwise
+     *
+     * @hide
+     */
+    public static boolean isConvertToEmergencyNumberEnabled() {
+        return CONVERT_TO_EMERGENCY_MAP != null && CONVERT_TO_EMERGENCY_MAP.length > 0;
+    }
+
+    /**
+     * Converts to emergency number based on the conversion map.
+     * The conversion map is declared as config_convert_to_emergency_number_map.
+     *
+     * Make sure {@link #isConvertToEmergencyNumberEnabled} is true before calling
+     * this function.
+     *
+     * @return The converted emergency number if the number matches conversion map,
+     * otherwise original number.
+     *
+     * @hide
+     */
+    public static String convertToEmergencyNumber(String number) {
+        if (TextUtils.isEmpty(number)) {
+            return number;
+        }
+
+        String normalizedNumber = normalizeNumber(number);
+
+        // The number is already emergency number. Skip conversion.
+        if (isEmergencyNumber(normalizedNumber)) {
+            return number;
+        }
+
+        for (String convertMap : CONVERT_TO_EMERGENCY_MAP) {
+            if (DBG) log("convertToEmergencyNumber: " + convertMap);
+            String[] entry = null;
+            String[] filterNumbers = null;
+            String convertedNumber = null;
+            if (!TextUtils.isEmpty(convertMap)) {
+                entry = convertMap.split(":");
+            }
+            if (entry != null && entry.length == 2) {
+                convertedNumber = entry[1];
+                if (!TextUtils.isEmpty(entry[0])) {
+                    filterNumbers = entry[0].split(",");
+                }
+            }
+            // Skip if the format of entry is invalid
+            if (TextUtils.isEmpty(convertedNumber) || filterNumbers == null
+                    || filterNumbers.length == 0) {
+                continue;
+            }
+
+            for (String filterNumber : filterNumbers) {
+                if (DBG) log("convertToEmergencyNumber: filterNumber = " + filterNumber
+                        + ", convertedNumber = " + convertedNumber);
+                if (!TextUtils.isEmpty(filterNumber) && filterNumber.equals(normalizedNumber)) {
+                    if (DBG) log("convertToEmergencyNumber: Matched. Successfully converted to: "
+                            + convertedNumber);
+                    return convertedNumber;
+                }
+            }
+        }
+        return number;
+    }
 }

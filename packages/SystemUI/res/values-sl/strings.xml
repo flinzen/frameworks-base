@@ -242,7 +242,7 @@
     <string name="data_usage_disabled_dialog_4g_title" msgid="1601769736881078016">"Prenos podatkov v omrežju 4G je zaustavljen"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="4651001290947318931">"Prenos mobilnih podatkov je zaustavljen"</string>
     <string name="data_usage_disabled_dialog_title" msgid="3932437232199671967">"Prenos podatkov je zaustavljen"</string>
-    <string name="data_usage_disabled_dialog" msgid="8453242888903772524">"Dosegli ste nastavljeno omejitev količine prenesenih podatkov, zato je naprava zaustavila porabo podatkov za preostanek cikla.\n\nČe nadaljujete s porabo, boste morda morali plačati stroške operaterju."</string>
+    <string name="data_usage_disabled_dialog" msgid="1841738975235283398">"Dosegli ste nastavljeno omejitev porabe podatkov. Prenosa podatkov v mobilnih omrežjih ne uporabljate več.\n\nČe nadaljujete, lahko nastanejo stroški prenosa podatkov."</string>
     <string name="data_usage_disabled_dialog_enable" msgid="1412395410306390593">"Nadaljuj"</string>
     <string name="status_bar_settings_signal_meter_disconnected" msgid="1940231521274147771">"Ni internetne povez."</string>
     <string name="status_bar_settings_signal_meter_wifi_nossid" msgid="6557486452774597820">"Wi-Fi povezan"</string>
@@ -410,21 +410,29 @@
     <string name="device_owned_footer" msgid="3802752663326030053">"Naprava je morda nadzorovana"</string>
     <string name="profile_owned_footer" msgid="8021888108553696069">"Profil je morda nadziran"</string>
     <string name="vpn_footer" msgid="2388611096129106812">"Omrežje je lahko nadzorovano"</string>
+    <string name="branded_vpn_footer" msgid="2168111859226496230">"Omrežje je morda nadzorovano"</string>
     <string name="monitoring_title_device_owned" msgid="7121079311903859610">"Nadzor naprave"</string>
     <string name="monitoring_title_profile_owned" msgid="6790109874733501487">"Nadzor nad profilom"</string>
     <string name="monitoring_title" msgid="169206259253048106">"Nadzor omrežja"</string>
+    <string name="monitoring_subtitle_vpn" msgid="876537538087857300">"VPN"</string>
+    <string name="monitoring_subtitle_network_logging" msgid="5569072711320784030">"Beleženje omrežnega prometa"</string>
     <string name="disable_vpn" msgid="4435534311510272506">"Onemogoči VPN"</string>
     <string name="disconnect_vpn" msgid="1324915059568548655">"Prekini povezavo z VPN-jem"</string>
-    <string name="monitoring_description_device_owned" msgid="5780988291898461883">"Napravo upravlja: <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira in upravlja nastavitve, dostop za podjetje, aplikacije, podatke, povezane z napravo, in podatke o lokaciji naprave. Če želite več informacij, se obrnite na skrbnika."</string>
+    <string name="monitoring_description_device_owned" msgid="220006422537330981">"Napravo upravlja <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira in upravlja nastavitve, dostop za podjetje, aplikacije, podatke, povezane z napravo, in podatke o lokaciji naprave. Če želite več informacij, se obrnite na skrbnika."</string>
+    <string name="monitoring_description_do_body_vpn" msgid="8255218762488901796">"Povezani ste z aplikacijo <xliff:g id="VPN_APP">%1$s</xliff:g>, ki lahko nadzira omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti."</string>
+    <string name="monitoring_description_vpn_settings_separator" msgid="1933186756733474388">" "</string>
+    <string name="monitoring_description_vpn_settings" msgid="8869300202410505143">"Odpri nastavitve omrežja VPN"</string>
+    <string name="monitoring_description_network_logging" msgid="7223505523384076027">"Skrbnik je vklopil beleženje omrežnega prometa, ki nadzoruje promet v napravi.\n\nČe želite več informacij, se obrnite na skrbnika."</string>
     <string name="monitoring_description_vpn" msgid="4445150119515393526">"Aplikaciji ste dovolili vzpostavitev povezave VPN.\n\nTa aplikacija lahko nadzira napravo in omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti."</string>
-    <string name="monitoring_description_vpn_device_owned" msgid="3090670777499161246">"Napravo upravlja: <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira in upravlja nastavitve, dostop za podjetje, aplikacije, podatke, povezane z napravo, in podatke o lokaciji naprave.\n\nPovezani ste z omrežjem VPN, ki lahko nadzira vašo omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika."</string>
-    <string name="monitoring_description_vpn_profile_owned" msgid="2054949132145039290">"Delovni profil upravlja organizacija <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika.\n\nPovezani ste tudi z omrežjem VPN, ki lahko nadzira omrežno dejavnost."</string>
+    <string name="monitoring_description_vpn_device_owned" msgid="6741053132592567634">"Napravo upravlja <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira in upravlja nastavitve, dostop za podjetje, aplikacije, podatke, povezane z napravo, in podatke o lokaciji naprave.\n\nPovezani ste v omrežje VPN, ki lahko nadzira vašo omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika."</string>
+    <string name="monitoring_description_vpn_profile_owned" msgid="2958019119161161530">"Delovni profil upravlja <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira vašo omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika.\n\nPovezani ste tudi z omrežjem VPN, ki lahko nadzira vašo omrežno dejavnost."</string>
     <string name="legacy_vpn_name" msgid="6604123105765737830">"VPN"</string>
     <string name="monitoring_description_app" msgid="6259179342284742878">"Povezani ste z aplikacijo <xliff:g id="APPLICATION">%1$s</xliff:g>, ki lahko nadzira omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti."</string>
     <string name="monitoring_description_app_personal" msgid="484599052118316268">"Povezani ste z aplikacijo <xliff:g id="APPLICATION">%1$s</xliff:g>, ki lahko nadzira vašo osebno omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti."</string>
-    <string name="monitoring_description_app_work" msgid="1754325860918060897">"Delovni profil upravlja organizacija <xliff:g id="ORGANIZATION">%1$s</xliff:g>. Povezan je z aplikacijo <xliff:g id="APPLICATION">%2$s</xliff:g>, ki lahko nadzira vašo delovno omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika."</string>
+    <string name="branded_monitoring_description_app_personal" msgid="2669518213949202599">"Povezani ste z aplikacijo <xliff:g id="APPLICATION">%1$s</xliff:g>, ki lahko nadzira vašo osebno omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti."</string>
+    <string name="monitoring_description_app_work" msgid="7777228449969022305">"Delovni profil upravlja <xliff:g id="ORGANIZATION">%1$s</xliff:g>. Povezan je z aplikacijo <xliff:g id="APPLICATION">%2$s</xliff:g>, ki lahko nadzira vašo delovno omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika."</string>
     <string name="monitoring_description_app_personal_work" msgid="4946600443852045903">"Delovni profil upravlja organizacija <xliff:g id="ORGANIZATION">%1$s</xliff:g>. Povezan je z aplikacijo <xliff:g id="APPLICATION_WORK">%2$s</xliff:g>, ki lahko nadzira vašo delovno omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nPovezani ste tudi z aplikacijo <xliff:g id="APPLICATION_PERSONAL">%3$s</xliff:g>, ki lahko nadzira vašo osebno omrežno dejavnost."</string>
-    <string name="monitoring_description_vpn_app_device_owned" msgid="4970443827043261703">"Napravo upravlja organizcija <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira in upravlja nastavitve, dostop za podjetje, aplikacije, podatke, povezane z napravo, in podatke o lokaciji naprave.\n\nPovezani ste z aplikacijo <xliff:g id="APPLICATION">%2$s</xliff:g>, ki lahko nadzira omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika."</string>
+    <string name="monitoring_description_vpn_app_device_owned" msgid="6157262536135989204">"Napravo upravlja <xliff:g id="ORGANIZATION">%1$s</xliff:g>.\n\nSkrbnik lahko nadzira in upravlja nastavitve, dostop za podjetje, aplikacije, podatke, povezane z napravo, in podatke o lokaciji naprave.\n\nPovezani ste z aplikacijo <xliff:g id="APPLICATION">%2$s</xliff:g>, ki lahko nadzira vašo omrežno dejavnost, vključno z e-pošto, aplikacijami in spletnimi mesti.\n\nČe želite več informacij, se obrnite na skrbnika."</string>
     <string name="keyguard_indication_trust_disabled" msgid="7412534203633528135">"Naprava bo ostala zaklenjena, dokler je ročno ne odklenete."</string>
     <string name="hidden_notifications_title" msgid="7139628534207443290">"Hitrejše prejemanje obvestil"</string>
     <string name="hidden_notifications_text" msgid="2326409389088668981">"Oglejte si jih pred odklepanjem"</string>
@@ -435,7 +443,8 @@
     <string name="accessibility_volume_expand" msgid="5946812790999244205">"Razširi"</string>
     <string name="accessibility_volume_collapse" msgid="3609549593031810875">"Strni"</string>
     <string name="screen_pinning_title" msgid="3273740381976175811">"Zaslon je pripet"</string>
-    <string name="screen_pinning_description" msgid="7238941806855968768">"S tem ostane zaslon v pogledu, dokler ga ne odpnete. Pridržite tipko za nazaj, če ga želite odpeti."</string>
+    <string name="screen_pinning_description" msgid="8909878447196419623">"S tem ostane zaslon viden, dokler ga ne odpnete. Če ga želite odpeti, hkrati pridržite gumba za nazaj in pregled."</string>
+    <string name="screen_pinning_description_accessible" msgid="426190689254018656">"S tem ostane zaslon viden, dokler ga ne odpnete. Če ga želite odpeti, pridržite gumb za pregled."</string>
     <string name="screen_pinning_positive" msgid="3783985798366751226">"Razumem"</string>
     <string name="screen_pinning_negative" msgid="3741602308343880268">"Ne, hvala"</string>
     <string name="quick_settings_reset_confirmation_title" msgid="748792586749897883">"Želite skriti <xliff:g id="TILE_LABEL">%1$s</xliff:g>?"</string>
@@ -498,8 +507,6 @@
     <string name="clock_seconds_desc" msgid="6282693067130470675">"Prikaže sekunde pri uri v vrstici stanja. To lahko vpliva na čas delovanja pri akumulatorskem napajanju."</string>
     <string name="qs_rearrange" msgid="8060918697551068765">"Preuredi hitre nastavitve"</string>
     <string name="show_brightness" msgid="6613930842805942519">"Prikaz svetlosti v hitrih nastavitvah"</string>
-    <string name="overview_nav_bar_gesture" msgid="8579814204727917764">"Omogočanje poteze za razdeljen zaslon z vlečenjem navzgor"</string>
-    <string name="overview_nav_bar_gesture_desc" msgid="6329167382305102615">"Omogočanje poteze za vklop razdeljenega zaslona, tako da uporabnik od gumba za pregled povleče s prstom navzgor"</string>
     <string name="experimental" msgid="6198182315536726162">"Poskusno"</string>
     <string name="enable_bluetooth_title" msgid="5027037706500635269">"Želite vklopiti Bluetooth?"</string>
     <string name="enable_bluetooth_message" msgid="9106595990708985385">"Če želite povezati tipkovnico in tablični računalnik, vklopite Bluetooth."</string>
@@ -657,4 +664,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="7806613775728380737">"Odpri nastavitve za <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="7839992848995240393">"Uredi vrstni red nastavitev."</string>
     <string name="accessibility_quick_settings_page" msgid="5032979051755200721">"<xliff:g id="ID_1">%1$d</xliff:g>. stran od <xliff:g id="ID_2">%2$d</xliff:g>"</string>
+    <string name="cant_silence_or_block" msgid="999689262131488625">"Obvestil ni mogoče utišati ali blokirati"</string>
+    <string name="high_temp_title" msgid="4589508026407318374">"Telefon se segreva"</string>
+    <string name="high_temp_notif_message" msgid="5642466103153429279">"Nekatere funkcije bodo med ohlajanjem omejene."</string>
+    <string name="high_temp_dialog_message" msgid="6840700639374113553">"Telefon se bo samodejno poskusil ohladiti. Še naprej ga lahko uporabljate, vendar bo morda deloval počasneje.\n\nKo se telefon ohladi, bo zopet deloval kot običajno."</string>
 </resources>
