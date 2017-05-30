@@ -677,6 +677,9 @@ public class AudioSystem
      */
     public static native int setDeviceConnectionState(int device, int state,
                                                       String device_address, String device_name);
+    public static int setDeviceConnectionState(int device, int state, String device_address) {
+      return setDeviceConnectionState(device, state, device_address, null);
+    }
     public static native int getDeviceConnectionState(int device, String device_address);
     public static native int handleDeviceConfigChange(int device,
                                                       String device_address,
@@ -820,4 +823,3 @@ public class AudioSystem
      */
     final static int NATIVE_EVENT_ROUTING_CHANGE = 1000;
 }
-

@@ -655,6 +655,19 @@ public class ConnectivityServiceTest extends AndroidTestCase {
         }
     }
 
+    private class WrappedAvoidBadWifiTracker extends AvoidBadWifiTracker {
+        public boolean configRestrictsAvoidBadWifi;
+
+        public WrappedAvoidBadWifiTracker(Context c, Handler h, Runnable r) {
+            super(c, h, r);
+        }
+
+        @Override
+        public boolean configRestrictsAvoidBadWifi() {
+            return configRestrictsAvoidBadWifi;
+        }
+    }
+
     private class WrappedConnectivityService extends ConnectivityService {
         public WrappedMultinetworkPolicyTracker wrappedMultinetworkPolicyTracker;
         private WrappedNetworkMonitor mLastCreatedNetworkMonitor;

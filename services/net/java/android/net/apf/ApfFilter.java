@@ -469,7 +469,6 @@ public class ApfFilter {
                 throw new InvalidRaException("Not an ICMP6 router advertisement");
             }
 
-
             RaEvent.Builder builder = new RaEvent.Builder();
 
             // Ignore the checksum.
