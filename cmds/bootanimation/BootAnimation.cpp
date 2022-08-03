@@ -538,6 +538,7 @@ bool BootAnimation::movie()
                             if (map) {
                                 Animation::Part& part(animation.parts.editItemAt(j));
                                 if (leaf == "audio.wav") {
+				    ALOGE("have audio");
                                     // a part may have at most one audio file
                                     part.audioFile = map;
                                 } else {
@@ -588,8 +589,11 @@ bool BootAnimation::movie()
 
             // only play audio file the first time we animate the part
             if (r == 0 && mAudioPlayer != NULL && part.audioFile) {
+		ALOGE("Playing something");
                 mAudioPlayer->playFile(part.audioFile);
-            }
+            } else {
+            	ALOGE("Not playing");
+	    }
 
             glClearColor(
                     part.backgroundColor[0],
