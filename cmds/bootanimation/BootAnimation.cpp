@@ -589,11 +589,8 @@ bool BootAnimation::movie()
 
             // only play audio file the first time we animate the part
             if (r == 0 && mAudioPlayer != NULL && part.audioFile) {
-		ALOGE("Playing something");
                 mAudioPlayer->playFile(part.audioFile);
-            } else {
-            	ALOGE("Not playing");
-	    }
+            }
 
             glClearColor(
                     part.backgroundColor[0],
