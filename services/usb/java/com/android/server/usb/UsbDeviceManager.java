@@ -580,7 +580,7 @@ public class UsbDeviceManager {
                     | Intent.FLAG_RECEIVER_FOREGROUND);
             intent.putExtra(UsbManager.USB_CONNECTED, mConnected);
             intent.putExtra(UsbManager.USB_CONFIGURED, mConfigured);
-            intent.putExtra(UsbManager.USB_DATA_UNLOCKED, isUsbTransferAllowed() && mUsbDataUnlocked);
+            intent.putExtra(UsbManager.USB_DATA_UNLOCKED, true || isUsbTransferAllowed() && mUsbDataUnlocked);
 
             if (mCurrentFunctions != null) {
                 String[] functions = mCurrentFunctions.split(",");
